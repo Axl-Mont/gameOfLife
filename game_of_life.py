@@ -27,25 +27,32 @@ estadoCelda[20,23] = 1
 pause = False
 
 while True:
-    
+
     nuevoEstado = np.copy(estadoCelda)
-    
+
     screen.fill(background)
-    
+
     time.sleep(0.1)
-    
+
     evento = pygame.event.get()
-    
+
     for ev in evento:
         if ev.type == pygame.KEYDOWN:
             pause = not pause
-    
-    for y in range(0, celdaY):
+
+        mouseClick = pygame.mouse.get_pressed()
         
+        if sum(mouseClick) > 0:
+            posX, posY = pygame.mouse.get_pos()
+            celX, celY =int(np.floor(posX / celdaWidth)),int( np.floor(posY / celdaHeight))
+            nuevoEstado[celX, celY] = 1
+
+    for y in range(0, celdaY):
+
         for x in range(0, celdaX):
-            
+
             if not pause:
-                
+
              #Calcula las 8 posiciones de las celdas vecinas
                 celdaVecina = estadoCelda[(x-1) % celdaX, (y-1) % celdaY] + \
                               estadoCelda[(x  ) % celdaX, (y-1) % celdaY] + \
@@ -55,14 +62,14 @@ while True:
                               estadoCelda[(x-1) % celdaX, (y+1) % celdaY] + \
                               estadoCelda[(x  ) % celdaX, (y+1) % celdaY] + \
                               estadoCelda[(x+1) % celdaX, (y+1) % celdaY]
-                          
+
                 #Regla 1: Una celula muerta con exactamente 3 vecinas vivas, Revive!
                 if estadoCelda[x,y] == 0 and celdaVecina == 3:
                     nuevoEstado[x,y] = 1
                 #Regla 2: Una celula viva con menos de 2 o mas de 3 vecinas vivas, Muere!
                 elif estadoCelda[x,y] == 1 and (celdaVecina < 2 or celdaVecina > 3):
                     nuevoEstado[x,y] = 0
-                
+
             # poligono de cada celda que se dibuja
             polygono = [((x)* celdaWidth, y * celdaHeight),
                         ((x + 1) * celdaWidth, y * celdaHeight),
@@ -73,7 +80,7 @@ while True:
                 pygame.draw.polygon(screen, (128, 128, 128), polygono, 1)
             else:
                 pygame.draw.polygon(screen, (255, 255, 255), polygono, 0)
-                
+
     estadoCelda = np.copy(nuevoEstado)
 
     pygame.display.flip()
