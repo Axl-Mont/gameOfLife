@@ -32,14 +32,59 @@ pausa = True
 finalizar = False
 # Contador de generaciones
 generacion = 0
-# Contador de Poblacion de celdas vivas
-poblacion = 0
 
 # Reloj de Pygame para limitar la velocidad de actualización
 clock = pygame.time.Clock()
 
+# Ventana de inicio con instructivos
+inicio = True
+
+# Texto de inicio
+font = pygame.font.Font(None, 24)
+font_grande = pygame.font.Font(None, 36)
+
+# Textos instructivos
+titulo = font_grande.render("Bienvenido al Juego de la Vida", True, (255, 255, 255))
+texto_comandos1 = font.render("Comandos:", True, (255, 255, 255))
+texto_comandos2 = font.render("ESPACIO (pausar / reanudar)", True, (255, 255, 255))
+texto_comandos3 = font.render("R (reiniciar)", True, (255, 255, 255))
+texto_comandos4 = font.render("CLICK izquierdo crea celdas vivas", True, (255, 255, 255))
+texto_comandos5 = font.render("CLICK derecho crea celdas muertas", True, (255, 255, 255))
+texto_comandos6 = font.render("ESC (salir)", True, (255, 255, 255))
+texto_inicio2 = font.render("Presiona ESPACIO para comenzar", True, (255, 255, 255))
+
+while inicio:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            inicio = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            inicio = False
+
+    screen.fill(background_color)
+    screen.blit(titulo,(100, 100))
+    screen.blit(texto_comandos1, (100, 200))
+    screen.blit(texto_comandos2, (100, 240))
+    screen.blit(texto_comandos3, (100, 280))
+    screen.blit(texto_comandos4, (100, 320))
+    screen.blit(texto_comandos5, (100, 360))
+    screen.blit(texto_comandos6, (100, 400))
+    screen.blit(texto_inicio2, (width // 2 - 150, height // 2 + 150))
+    pygame.display.flip()
+
+""" 
+Ciclo principal del juego "Game of Life".
+Este ciclo controla la lógica principal del juego, incluyendo la actualización de la población,
+las reglas del juego y la interacción del usuario. El juego se ejecuta hasta que el usuario
+decide finalizarlo.
+El ciclo maneja los siguientes aspectos del juego:
+- Pausar o reanudar el juego con la tecla Espacio.
+- Finalizar el juego al presionar la tecla ESC.
+- Reiniciar el juego, limpiando la grilla, la población y la iteración con la tecla R.
+El juego sigue las reglas del "Juego de la Vida", donde las células pueden nacer o morir
+según el número de células vecinas vivas.
+"""
 while not finalizar:
-    
+
     # Conjunto para el próximo estado
     nuevoEstado = np.copy(estado_celdas)
 
@@ -49,26 +94,27 @@ while not finalizar:
 
     evento = pygame.event.get()
 
+    # Contador de Poblacion de celdas vivas
+    poblacion = 0
+
     for ev in evento:
         if ev.type == pygame.QUIT:
             finalizar = True
             break
 
         if ev.type == pygame.KEYDOWN:
-
-         # Tecla ESC para finalizar el juego
-            if ev.key == pygame.K_ESCAPE:
+            if ev.key == pygame.K_ESCAPE: 
+                # Tecla ESC para finalizar el juego
                 finalizar = True
-                break
-            # Tecla R para limpiar la grilla, resetear población e iteración y pausa el juego
-            if ev.key == pygame.K_r:
+            elif ev.key == pygame.K_SPACE:
+                # Pausa o reanuda el juego con la barra espaciadora
+                pausa = not pausa
+            elif ev.key == pygame.K_r:
+                # Tecla R para limpiar la grilla, resetear población e iteración y pausa el juego
                 generacion = 0
                 estado_celdas = np.zeros((num_celdas_x, num_celdas_y))
                 nuevoEstado = np.zeros((num_celdas_x, num_celdas_y))
                 pausa = True
-            else:
-                # Culquier otra tecla pausa o reanuda el juego
-                pausa = not pausa 
 
         mouseClick = pygame.mouse.get_pressed()
 
@@ -80,7 +126,7 @@ while not finalizar:
 
             else:
                 posicion_x, posicion_y = pygame.mouse.get_pos()
-                celda_x, celda_y =int(np.floor(posicion_x / ancho_celda)),int( np.floor(posicion_y / alto_celda))
+                celda_x, celda_y =int(np.floor(posicion_x / ancho_celda)),int(np.floor(posicion_y/alto_celda))
                 # Click izquierdo celada vida y derecho para celda muerta
                 nuevoEstado[celda_x, celda_y] = not mouseClick[2]
 
@@ -139,5 +185,3 @@ while not finalizar:
     pygame.display.flip()
 
     clock.tick(60)
-
-print("Juego finalizado")
