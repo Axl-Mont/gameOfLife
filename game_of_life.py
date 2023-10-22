@@ -1,49 +1,53 @@
-import pygame
-import numpy as np
-import time
-import os
+import pygame # Biblioteca para crear juegos
+import numpy as np # Biblioteca para operaciones numéricas
+import time # Biblioteca para gestionar el tiempo
+import os # Biblioteca para interactuar con el sistema operativo
 
+# Configuración de la ventana de Pygame
 os.environ["SDL_VIDEO_CENTERED"] = "1"
-
 pygame.init()
-
 pygame.display.set_caption("Game of Life")
 
+# Tamaño de la ventana
 width, height = 700, 700
 screen = pygame.display.set_mode((width, height))
 
-background = (25, 25, 25)
-screen.fill(background)
+# Color de fondo
+background_color = (25, 25, 25)
+screen.fill(background_color)
 
-# Cantidad de celdas en cada eje
-celdaX, celdaY = 50, 50
+# Número de celdas en cada eje
+num_celdas_x, num_celdas_y = 50, 50
 # Ancho y alto de cada celda
-celdaWidth = width // celdaX
-celdaHeight = height // celdaY
+ancho_celda = width // num_celdas_x
+alto_celda = height // num_celdas_y
 
 # Estructura de datos que contiene todos los estados de las diferentes celdas
 # Estados de las celdas: Vivas = 1 - Muertas = 0
-estadoCelda = np.zeros((celdaY, celdaX))
+estado_celdas = np.zeros((num_celdas_y, num_celdas_x))
 
-pause = True
-
+# Bandera para pausa
+pausa = True
+# Bandera para finalizar
 finalizar = False
+# Contador de generaciones
+generacion = 0
+# Contador de Poblacion de celdas vivas
+poblacion = 0
 
-iteraciones = 0
-
+# Reloj de Pygame para limitar la velocidad de actualización
 clock = pygame.time.Clock()
 
 while not finalizar:
+    
+    # Conjunto para el próximo estado
+    nuevoEstado = np.copy(estado_celdas)
 
-    nuevoEstado = np.copy(estadoCelda)
-
-    screen.fill(background)
+    screen.fill(background_color)
 
     time.sleep(0.1)
 
     evento = pygame.event.get()
-
-    poblacion = 0
 
     for ev in evento:
         if ev.type == pygame.QUIT:
@@ -58,13 +62,13 @@ while not finalizar:
                 break
             # Tecla R para limpiar la grilla, resetear población e iteración y pausa el juego
             if ev.key == pygame.K_r:
-                iteraciones = 0
-                estadoCelda = np.zeros((celdaX, celdaY))
-                nuevoEstado = np.zeros((celdaX, celdaY))
-                pause = True
+                generacion = 0
+                estado_celdas = np.zeros((num_celdas_x, num_celdas_y))
+                nuevoEstado = np.zeros((num_celdas_x, num_celdas_y))
+                pausa = True
             else:
                 # Culquier otra tecla pausa o reanuda el juego
-                pause = not pause 
+                pausa = not pausa 
 
         mouseClick = pygame.mouse.get_pressed()
 
@@ -72,65 +76,65 @@ while not finalizar:
             # Click del medio pausa / reanuda el juego
             if mouseClick[1]:
 
-                pause = not pause
+                pausa = not pausa
 
             else:
-                posX, posY = pygame.mouse.get_pos()
-                celX, celY =int(np.floor(posX / celdaWidth)),int( np.floor(posY / celdaHeight))
+                posicion_x, posicion_y = pygame.mouse.get_pos()
+                celda_x, celda_y =int(np.floor(posicion_x / ancho_celda)),int( np.floor(posicion_y / alto_celda))
                 # Click izquierdo celada vida y derecho para celda muerta
-                nuevoEstado[celX, celY] = not mouseClick[2]
+                nuevoEstado[celda_x, celda_y] = not mouseClick[2]
 
-    if not pause:
+    if not pausa:
         # Incremento el contador de generaciones
-        iteraciones += 1
+        generacion += 1
 
-    for y in range(0, celdaY):
+    for y in range(0, num_celdas_y):
 
-        for x in range(0, celdaX):
+        for x in range(0, num_celdas_x):
 
-            if not pause:
+            if not pausa:
 
              #Calcula las 8 posiciones de las celdas vecinas
-                celdaVecina = estadoCelda[(x-1) % celdaX, (y-1) % celdaY] + \
-                              estadoCelda[(x  ) % celdaX, (y-1) % celdaY] + \
-                              estadoCelda[(x+1) % celdaX, (y-1) % celdaY] + \
-                              estadoCelda[(x-1) % celdaX, (y  ) % celdaY] + \
-                              estadoCelda[(x+1) % celdaX, (y  ) % celdaY] + \
-                              estadoCelda[(x-1) % celdaX, (y+1) % celdaY] + \
-                              estadoCelda[(x  ) % celdaX, (y+1) % celdaY] + \
-                              estadoCelda[(x+1) % celdaX, (y+1) % celdaY]
+                celda_vecina = estado_celdas[(x-1) % num_celdas_x, (y-1) % num_celdas_y] + \
+                              estado_celdas[(x  ) % num_celdas_x, (y-1) % num_celdas_y] + \
+                              estado_celdas[(x+1) % num_celdas_x, (y-1) % num_celdas_y] + \
+                              estado_celdas[(x-1) % num_celdas_x, (y  ) % num_celdas_y] + \
+                              estado_celdas[(x+1) % num_celdas_x, (y  ) % num_celdas_y] + \
+                              estado_celdas[(x-1) % num_celdas_x, (y+1) % num_celdas_y] + \
+                              estado_celdas[(x  ) % num_celdas_x, (y+1) % num_celdas_y] + \
+                              estado_celdas[(x+1) % num_celdas_x, (y+1) % num_celdas_y]
 
                 #Regla 1: Una celula muerta con exactamente 3 vecinas vivas, Revive!
-                if estadoCelda[x,y] == 0 and celdaVecina == 3:
+                if estado_celdas[x,y] == 0 and celda_vecina == 3:
                     nuevoEstado[x,y] = 1
                 #Regla 2: Una celula viva con menos de 2 o mas de 3 vecinas vivas, Muere!
-                elif estadoCelda[x,y] == 1 and (celdaVecina < 2 or celdaVecina > 3):
+                elif estado_celdas[x,y] == 1 and (celda_vecina < 2 or celda_vecina > 3):
                     nuevoEstado[x,y] = 0
 
-            if estadoCelda[x, y] == 1:
+            if estado_celdas[x, y] == 1:
                 poblacion += 1
 
             # poligono de cada celda que se dibuja
-            poligono = [((x)* celdaWidth, y * celdaHeight),
-                        ((x + 1) * celdaWidth, y * celdaHeight),
-                        ((x + 1) * celdaWidth, (y + 1) * celdaHeight),
-                        ((x) * celdaWidth, (y + 1) * celdaHeight)]
+            poligono = [((x)* ancho_celda, y * alto_celda),
+                        ((x + 1) * ancho_celda, y * alto_celda),
+                        ((x + 1) * ancho_celda, (y + 1) * alto_celda),
+                        ((x) * ancho_celda, (y + 1) * alto_celda)]
 
             if nuevoEstado[x,y] == 0:
                 pygame.draw.polygon(screen, (128, 128, 128), poligono, 1)
             else:
-                if pause:
+                if pausa:
                     pygame.draw.polygon(screen, (128, 128, 128), poligono, 0)
                 else:
                     pygame.draw.polygon(screen, (255, 255, 255), poligono, 0)
 
      # Actualizo el título de la ventana
-    title = f"Juego de la vida:  Población: {poblacion} Generación: {iteraciones}"
-    if pause:
-        title += " - [PAUSA]"
-    pygame.display.set_caption(title)
+    titulo = f"Juego de la vida:  Población: {poblacion} Generación: {generacion}"
+    if pausa:
+        titulo += " - [PAUSA]"
+    pygame.display.set_caption(titulo)
 
-    estadoCelda = np.copy(nuevoEstado)
+    estado_celdas = np.copy(nuevoEstado)
 
     pygame.display.flip()
 
